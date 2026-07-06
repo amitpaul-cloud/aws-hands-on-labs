@@ -1,0 +1,139 @@
+# Day 3 - AWS Auto Scaling
+
+## Objective
+
+Learn how to configure Amazon EC2 Auto Scaling to automatically launch new EC2 instances when CPU utilization increases and distribute traffic using an Application Load Balancer (ALB).
+
+---
+
+## Services Used
+
+- Amazon EC2
+- Amazon Machine Image (AMI)
+- Launch Template
+- Auto Scaling Group (ASG)
+- Application Load Balancer (ALB)
+- Target Group
+- Amazon CloudWatch
+- Amazon Linux 2023
+- Apache HTTP Server (httpd)
+
+---
+
+## Architecture
+
+Client
+
+↓
+
+Application Load Balancer
+
+↓
+
+Target Group
+
+↓
+
+Auto Scaling Group
+
+↓
+
+EC2 Instances
+
+---
+
+## Practical Steps
+
+### Step 1
+
+Created an Amazon Linux 2023 EC2 instance.
+
+Installed Apache HTTP Server.
+
+sudo yum install httpd -y
+sudo systemctl enable --now httpd
+echo “Hello Apache” > /var/www/html/index.html
+---
+
+### Step 2
+
+Created a custom Amazon Machine Image (AMI) from the configured web server.
+
+---
+
+### Step 3
+
+Created a Launch Template using the custom AMI.
+
+---
+
+### Step 4
+
+Created an Auto Scaling Group.
+
+Configuration:
+
+- Desired Capacity: 1
+- Minimum Capacity: 1
+- Maximum Capacity: 4
+
+---
+
+### Step 5
+
+Created an Application Load Balancer.
+
+Configured:
+
+- Internet Facing
+- HTTP Listener (Port 80)
+
+---
+
+### Step 6
+
+Created a Target Group.
+
+Configuration:
+
+- Target Type: Instance
+- Protocol: HTTP
+- Port: 80
+
+---
+
+### Step 7
+
+Attached the Auto Scaling Group to the Target Group.
+
+Verified that the EC2 instance became Healthy.
+
+---
+
+### Step 8
+
+Installed the **stress** package.
+
+sudo yum install stress -y
+
+Generated CPU load.
+
+stress --cpu 2 --timeout 300
+
+---
+
+### Step 9
+
+Observed that Auto Scaling automatically launched a new EC2 instance when CPU utilization exceeded the configured threshold.
+
+---
+
+### Step 10
+
+Verified that the newly launched EC2 instance was automatically registered with the Target Group and became Healthy.
+
+---
+
+## Result
+
+Successfully configured Amazon EC2 Auto Scaling with an Application Load Balancer to automatically launch new EC2 instances during high CPU utilization and distribute incoming traffic across healthy instances.
