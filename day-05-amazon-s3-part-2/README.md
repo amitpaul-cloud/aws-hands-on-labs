@@ -156,8 +156,6 @@ I created an S3 Lifecycle rule to automatically transition objects between stora
 
 The S3 Lifecycle rule was created successfully.
 
-> **Note:** S3 Lifecycle transitions are asynchronous and do not occur immediately.
-
 ### Screenshots
 
 ![S3 Lifecycle Rule Transition Configuration](screenshots/06-S3-Lifecycle-Rule-Transition-Configuration.png)
