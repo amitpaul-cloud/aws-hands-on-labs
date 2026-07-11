@@ -36,8 +36,6 @@ In this lab, I configured S3 replication between two buckets, replicated existin
 
 ### S3 Data Management Architecture
 
-### S3 Data Management Architecture
-
 ```mermaid
 flowchart TD
     A["Amazon S3<br/>Source Bucket"]
