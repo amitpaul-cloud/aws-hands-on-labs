@@ -35,16 +35,20 @@ In this lab, I configured S3 replication between two buckets, replicated existin
 ## Lab Architecture
 
 
-                    Amazon S3 Source Bucket
+                     Amazon S3 Source Bucket
                               |
           +-------------------+-------------------+
           |                   |                   |
           v                   v                   v
+ 
    Replication Rule     Lifecycle Rule     Server Access Logs
+   
           |                   |                   |
           v                   v                   v
+
  Destination Bucket     Standard-IA        Logging Destination
                        after 30 days             Bucket
+                       
                               |
                               v
                     Glacier Deep Archive
