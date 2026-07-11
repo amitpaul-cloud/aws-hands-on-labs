@@ -201,8 +201,6 @@ I performed operations on the source S3 bucket and verified that server access l
 
 S3 server access logs were successfully delivered to the destination S3 bucket.
 
-> **Note:** S3 server access logs are delivered asynchronously on a best-effort basis. Log delivery may take some time.
-
 ### Screenshot
 
 ![S3 Access Logs Delivered to Destination Bucket](screenshots/09-S3-Access-Logs-Delivered-to-Destination-Bucket.png)
