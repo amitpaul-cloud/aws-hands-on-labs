@@ -34,166 +34,227 @@ In this lab, I configured S3 replication between two buckets, replicated existin
 
 ## Lab Architecture
 
+### S3 Data Management Architecture
 
-                     Amazon S3 Source Bucket
-                              |
-          +-------------------+-------------------+
-          |                   |                   |
-          v                   v                   v
-   Replication Rule     Lifecycle Rule     Server Access Logs
-          |                   |                   |
-          v                   v                   v
- Destination Bucket     Standard-IA        Logging Destination
-                       after 30 days             Bucket     
-                              |
-                              v
-                    Glacier Deep Archive
-                       after 60 days
+### S3 Data Management Architecture
 
+```mermaid
+flowchart TD
+    A["Amazon S3<br/>Source Bucket"]
 
-Amazon S3 Object Event
-          |
-          v
-    Amazon SNS Topic
-          |
-          v
- Confirmed Email Subscription
-          |
-          v
- Email Notification Received
+    A --> B["S3 Replication<br/>Rule"]
+    B --> C["Destination<br/>S3 Bucket"]
+
+    A --> D["S3 Lifecycle<br/>Rule"]
+    D --> E["S3 Standard-IA<br/>After 30 Days"]
+    E --> F["S3 Glacier Deep Archive<br/>After 60 Days"]
+
+    A --> G["S3 Server Access<br/>Logging"]
+    G --> H["Logging Destination<br/>S3 Bucket"]
+```
+
+---
+
+### S3 Event Notification Architecture
+
+```mermaid
+flowchart LR
+    A["Amazon S3<br/>Object Event"]
+    A --> B["Amazon SNS<br/>Topic"]
+    B --> C["Confirmed Email<br/>Subscription"]
+    C --> D["Email Notification<br/>Received"]
+```
+
+---
 
 
 ## Task 1: Configure an S3 Replication Rule
 
-I created and enabled an S3 replication rule to automatically replicate objects from a source S3 bucket to a destination S3 bucket.
+I configured an Amazon S3 replication rule to automatically replicate new objects from the source bucket to the destination bucket.
 
-## Configuration
+### Configuration
 
-Replication status: Enabled
-Replication scope: Entire bucket
-Source Region: Asia Pacific (Mumbai) – ap-south-1
-Destination Region: Asia Pacific (Mumbai) – ap-south-1
-Destination storage class: S3 Standard-IA
+- Source bucket: `amit-first-bucket--1`
+- Destination bucket: `amit-aws-bucket--2`
+- Replication scope: Entire bucket
+- Replication rule status: Enabled
+- Destination storage class: S3 Standard-IA
+- Versioning: Enabled on both source and destination buckets
 
-## Result
-The replication rule was successfully enabled.
+### Verification
+
+I uploaded an object to the source S3 bucket and verified that it was automatically replicated to the destination S3 bucket.
+
+### Result
+
+The S3 replication rule was configured successfully, and newly uploaded objects were automatically copied to the destination bucket.
+
+### Screenshot
+
+![S3 Replication Rule Enabled](screenshots/08-S3-Replication-Rule-Enabled.png)
+
 ---
 
 ## Task 2: Verify Object Replication
 
-After configuring the replication rule, I verified that the object was successfully copied from the source S3 bucket to the destination S3 bucket.
+I verified that the object uploaded to the source S3 bucket was successfully replicated to the destination S3 bucket.
 
-## Result
+### Verification
 
-The replicated object was available in the destination bucket with the configured S3 Standard-IA storage class.
+- The replicated object was available in the destination bucket.
+- The destination object used the S3 Standard-IA storage class.
+- The replication process completed successfully.
+
+### Result
+
+The object was successfully replicated from the source S3 bucket to the destination S3 bucket.
+
+### Screenshot
+
+![S3 Object Replicated to Destination Bucket](screenshots/07-S3-Object-Replicated-to-Destination-Bucket.png)
+
 ---
 
 ## Task 3: Perform S3 Batch Replication
 
-I used Amazon S3 Batch Operations to replicate an existing object.
+I used Amazon S3 Batch Replication to replicate eligible existing objects from the source bucket to the destination bucket.
 
-S3 replication rules generally replicate new objects uploaded after the replication configuration is enabled. S3 Batch Replication can be used to replicate eligible existing objects.
+S3 live replication applies to new objects uploaded after the replication rule is enabled. S3 Batch Replication can be used to replicate eligible existing objects.
 
-## Result
+### Verification
 
-Operation: Replicate
-Job status: Completed
-Completion: 100%
-Failed objects: 0
+- Batch operation status: Completed
+- Completion percentage: 100%
+- Total failed objects: 0
+
+### Result
+
+The S3 Batch Replication job completed successfully without any failed objects.
+
+### Screenshot
+
+![S3 Batch Replication Job Completed](screenshots/01-S3-Batch-Replication-Job-Completed.png)
+
 ---
 
 ## Task 4: Configure an S3 Lifecycle Rule
 
-I created an S3 lifecycle rule to automatically transition objects between storage classes according to their age.
+I created an S3 Lifecycle rule to automatically transition objects between storage classes based on their age.
 
-## Lifecycle Transition
+### Lifecycle Transitions
 
-Object Age	Storage Class
-Day 0	S3 Standard
-After 30 days	S3 Standard-IA
-After 60 days	S3 Glacier Deep Archive
+- Day 0: Object is uploaded to the S3 Standard storage class.
+- Day 30: Object transitions to the S3 Standard-IA storage class.
+- Day 60: Object transitions to the S3 Glacier Deep Archive storage class.
+
+### Verification
+
+- Lifecycle rule status: Enabled
+- Rule scope: Entire bucket
+- First transition: S3 Standard-IA after 30 days
+- Second transition: S3 Glacier Deep Archive after 60 days
+
+### Result
+
+The S3 Lifecycle rule was created successfully.
+
+> **Note:** S3 Lifecycle transitions are asynchronous and do not occur immediately.
+
+### Screenshots
+
+![S3 Lifecycle Rule Transition Configuration](screenshots/06-S3-Lifecycle-Rule-Transition-Configuration.png)
+
+![S3 Lifecycle Rule Created Successfully](screenshots/03-S3-Lifecycle-Rule-Created-Successfully.png)
+
 ---
 
-## Lifecycle Flow
+## Task 5: Configure S3 Server Access Logging
 
-                  Object Uploaded
-                       |
-                       v
-                   S3 Standard
-                       |
-                       | After 30 days
-                       v
-                S3 Standard-IA
-                       |
-                       | After 60 days
-                       v
-              S3 Glacier Deep Archive
+I enabled S3 Server Access Logging on the source bucket to record requests made to the bucket.
 
-## Result
+### Configuration
 
-The lifecycle rule was successfully created and enabled.
+- Source bucket: `amit-first-bucket--1`
+- Server access logging: Enabled
+- Log destination bucket: `amit-aws-bucket--2`
+- Log object key format: Date-based partitioning
+
+### Result
+
+S3 Server Access Logging was enabled successfully, and the access logs were configured to be delivered to the destination S3 bucket.
+
+### Screenshot
+
+![S3 Server Access Logging Enabled](screenshots/04-S3-Server-Access-Logging-Enabled.png)
+
 ---
 
-## Task 5: Enable S3 Server Access Logging
+## Task 6: Verify Server Access Logs
 
-I enabled S3 Server Access Logging on the source bucket and configured another S3 bucket as the destination for the generated access logs.
+I performed operations on the source S3 bucket and verified that server access log objects were delivered to the destination bucket.
 
-Server access logs provide detailed records of requests made to an S3 bucket and can be useful for:
+### Verification
 
-Security auditing
-Access analysis
-Troubleshooting
-Operational monitoring
+- Multiple server access log objects were created.
+- The logs were stored in date-based folders.
+- The log objects contained request information for the source S3 bucket.
+
+### Result
+
+S3 server access logs were successfully delivered to the destination S3 bucket.
+
+> **Note:** S3 server access logs are delivered asynchronously on a best-effort basis. Log delivery may take some time.
+
+### Screenshot
+
+![S3 Access Logs Delivered to Destination Bucket](screenshots/09-S3-Access-Logs-Delivered-to-Destination-Bucket.png)
 ---
 
-## Task 6: Verify Access-Log Delivery
+## Task 7: Create an Amazon SNS Topic and Email Subscription
 
-After generating activity in the source bucket, I verified that S3 access-log objects were delivered to the configured destination bucket.
+I created an Amazon SNS topic and configured an email subscription to receive notifications generated by Amazon S3 events.
 
-The log objects were organised using the AWS account, Region, source bucket, year, month, and day prefixes.
+### Configuration
 
-## Result
+- SNS topic: `Topic1`
+- Topic type: Standard
+- Subscription protocol: Email
+- Subscription status: Confirmed
 
-S3 server access logs were successfully generated and delivered to the destination bucket.
----
+### Verification
 
-## Task 7: Create an Amazon SNS Topic and Subscription
+I confirmed the SNS subscription through the confirmation email sent by Amazon SNS.
 
-I created an Amazon SNS Standard topic and added an email subscription.
+### Result
 
-I confirmed the subscription using the confirmation link received by email.
+The Amazon SNS topic and email subscription were created and confirmed successfully.
 
-## Result
-SNS topic type: Standard
-Subscription protocol: Email
-Subscription status: Confirmed
+### Screenshot
+
+![SNS Topic and Email Subscription Confirmed](screenshots/05-SNS-Topic-and-Email-Subscription-Confirmed.png)
+
 ---
 
 ## Task 8: Configure an S3 Event Notification
 
-I configured an S3 event notification and selected the Amazon SNS topic as the notification destination.
+I created an S3 Event Notification to publish object-level events from the source S3 bucket to the Amazon SNS topic.
 
-## Events Configured
+### Event Configuration
 
-All object-created events
-All object-removed events
+- Event destination: Amazon SNS topic
+- Event types: All object create events
+- Event types: All object remove events
+- SNS destination: `Topic1`
 
-## Event Workflow
-                  
-                  Object Uploaded or Deleted
-                             |
-                             v
-                       Amazon S3 Event
-                             |
-                             v
-                      Amazon SNS Topic
-                             |
-                             v
-                     Email Subscription
-                             |
-                             v
-                    Notification Received
-  ---
+### Result
+
+The S3 Event Notification was configured successfully and integrated with the Amazon SNS topic.
+
+### Screenshot
+
+![S3 Event Notification Configured with SNS](screenshots/02-S3-Event-Notification-Configured-with-SNS.png)
+
+---
 
 ## Task 9: Verify the SNS Email Notification
 
@@ -201,44 +262,49 @@ I uploaded objects to the source S3 bucket and successfully received Amazon S3 e
 
 The notification included event information such as:
 
-Event name
-AWS Region
-S3 bucket name
-Object key
-Object size
-Event timestamp
+- Event name
+- AWS Region
+- S3 bucket name
+- Object key
+- Object size
+- Event timestamp
 
-## Result
+### Result
 
 The complete event-driven notification workflow operated successfully.
+
+### Screenshot
+
+![S3 Object Upload Notification Received through SNS](screenshots/10-S3-Object-Upload-Notification-Received-via-SNS.png)
+
 ---
 
 ## Key Learnings
 
-S3 replication can automatically copy new objects between source and destination buckets.
-S3 Batch Replication can replicate eligible existing objects.
-S3 lifecycle rules help optimise storage costs by automatically transitioning objects between storage classes.
-Lifecycle transitions occur asynchronously and do not happen immediately.
-S3 Server Access Logging records requests made to an S3 bucket.
-Server access logs are delivered asynchronously on a best-effort basis.
-Amazon SNS uses a publish-and-subscribe messaging model.
-Email subscriptions must be confirmed before receiving normal SNS notifications.
-S3 event notifications can publish object-level events to an SNS topic.
-S3 and SNS can be integrated to create an event-driven email-notification workflow.
+- S3 Replication can automatically copy new objects from a source bucket to a destination bucket.
+- S3 Versioning must be enabled for replication.
+- S3 Batch Replication can replicate eligible existing objects.
+- S3 Lifecycle rules can help optimize storage costs by automatically transitioning objects between storage classes.
+- Lifecycle transitions occur asynchronously and do not happen immediately.
+- S3 Server Access Logging records requests made to an S3 bucket.
+- Server access logs are delivered asynchronously on a best-effort basis.
+- Amazon SNS uses a publish-and-subscribe messaging model.
+- SNS email subscriptions must be confirmed before receiving notifications.
+- S3 Event Notifications can publish object-level events to an Amazon SNS topic.
+- Amazon S3 and Amazon SNS can be integrated to create an event-driven email-notification workflow.
+
 ---
 
-## Lab Outcome
+## Final Outcome
 
-Successfully implemented and verified:
+In this hands-on lab, I successfully implemented:
 
-S3 Replication Rule
-S3 Object Replication
-S3 Batch Replication
-S3 Lifecycle Management
-Storage-Class Transitions
-S3 Server Access Logging
-Access-Log Delivery
-Amazon SNS Topic
-Confirmed Email Subscription
-S3 Event Notifications
-Email Notification Delivery
+- S3 Replication for newly uploaded objects
+- S3 Batch Replication for eligible existing objects
+- S3 Lifecycle management using Standard-IA and Glacier Deep Archive
+- S3 Server Access Logging with a separate logging destination bucket
+- Amazon SNS topic and confirmed email subscription
+- S3 Event Notifications integrated with Amazon SNS
+- Event-driven email notifications for S3 object-level activities
+
+This lab improved my practical understanding of Amazon S3 data management, storage-cost optimization, access logging, replication, and event-driven architecture.
